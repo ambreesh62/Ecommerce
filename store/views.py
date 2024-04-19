@@ -36,7 +36,7 @@ def home(request):
                 products = Product.get_all_product_by_category_id(categoryID)
                 data['products'] = products
 
-                return render(request,'home.html')
+                return render(request,'home.html', data)
                 
             else:
                 products = Product.objects.all()    
@@ -46,7 +46,6 @@ def home(request):
                 data['products'] = products
                 data['category'] = category
                 data['total_item'] = total_item
-                print('you are ', request.session.get('phone'))
         return render(request,'home.html', data)
     else:
         return redirect('login')
@@ -125,9 +124,8 @@ def productdetail(request,pk):
         phone = request.session['phone']
         total_item = len(Cart.objects.filter(phone=phone))
         item_already_in_cart = Cart.objects.filter(Q(product=product.id) & Q(phone=phone)).exists()
-        customer = Customer.objects.filter(phone=phone)
-        for c in customer:
-            name=c.name
+        customer = Customer.objects.filter(phone=request.session['phone'])
+        name=customer.last().name
         data = {
             'product' :product,
             'item_already_in_cart' : item_already_in_cart,
@@ -148,35 +146,40 @@ def Logout(request):
 def add_to_cart(request):
     phone = request.session['phone']
     product_id = request.GET.get('prod_id')
-    product_name = Product.objects.get(id = product_id)
-    product = Product.objects.filter(id=product_id)
-    for p in product:
-        image = p.image
-        price = p.price
-        Cart(phone=phone,product=product_name,image=image,price=price).save()
-        return redirect(f"/product-detail/{product_id}")
+    product = Product.objects.get(id=product_id)
+    cart = Cart.objects.filter(product_id=product_id)
+    if cart:
+        cart.first().quantity += 1
+        cart.first().save()
+    else:
+        Cart.objects.create(phone=phone,product_id=product.id)
+    customer = Customer.objects.filter(phone=request.session['phone'])
+
+    data = {
+        'name': customer.first().name if customer else "User",
+        'carts': Cart.objects.filter(phone=phone)
+    }
+    return render(request, 'show_cart.html', data)
 
 # Show_Cart
 def Show_cart(request):
     total_item = 0
     if request.session.has_key('phone'):
         phone = request.session['phone']
-        total_item = len(Cart.objects.filter(phone=phone))
-        customer = Customer.objects.filter(phone=phone)
         
-        for c in customer:
-            name = c.name
-            
-            cart = Cart.objects.filter(phone=phone)
-            data ={
-                'name' : name,
-                'total_item' : total_item,
-                'cart' : cart
-            }
-            if cart:
-                return render(request, 'show_cart.html', data)
-            else:
-                return render(request, 'empty_cart.html', data)
+        carts = Cart.objects.filter(phone=phone)
+
+        customer = Customer.objects.filter(phone=request.session['phone'])
+
+        data = {
+            'name': customer.first().name if customer else "User",
+            'carts': Cart.objects.filter(phone=phone)
+        }
+                
+        if carts:
+            return render(request, 'show_cart.html', data)
+        else:
+            return render(request, 'empty_cart.html', data)
             
     return render(request, 'login.html')
         
@@ -185,58 +188,68 @@ def Show_cart(request):
     
     
 # Cart me plus krne ke liye
-def plus_cart(request):
+def plus_cart(request, pk):
     if request.session.has_key('phone'):
-        phone = request.session['phone']
-        product_id = request.GET('prod_id')
-        cart = Cart.objects.get(Q(product=product_id) & Q(phone=phone))
+        cart = Cart.objects.get(product_id=pk)
         cart.quantity+=1
         cart.save()
         
-        data = {
-            'quantity' : cart.quantity,
-        }
-        return JsonResponse(data)
-    else:
-        return JsonResponse({'error': 'Phone not found in session'})
+    carts = Cart.objects.filter(phone=request.session['phone'])
+    customer = Customer.objects.filter(phone=request.session['phone'])
+
+    data = {
+        'name': customer.first().name if customer else "User",
+        'carts': carts
+    }
+    return render(request, 'show_cart.html', data)
     
     
     
 # Cart se htaane ke liye
 
-def minus_cart(request):
+def minus_cart(request, pk):
     if request.session.has_key('phone'):
-        phone = request.session['phone']
-        product_id = request.GET('prod_id')
-        cart = Cart.objects.get(Q(product=product_id) & Q(phone=phone))
-        cart.quantity-=1
-        cart.save()
+        cart = Cart.objects.get(product_id=pk)
+        if cart.quantity == 1:
+            cart.delete()
+        else:
+            cart.quantity-=1
+            cart.save()
         
-        data = {
-            'quantity' : cart.quantity,
-        }
-        return JsonResponse(data)
+    carts = Cart.objects.filter(phone=request.session['phone'])
+    customer = Customer.objects.filter(phone=request.session['phone'])
+
+    data = {
+        'name': customer.first().name if customer else "User",
+        'carts': carts
+    } 
+    if carts:      
+        return render(request, 'show_cart.html', data)
     else:
-        return JsonResponse({'error': 'Phone not found in session'})    
+        return render(request, 'empty_cart.html',data)
     
     
 # Remove Cart
 
-def remove_cart(request):
+def remove_cart(request, pk):
+    
     if request.method == 'GET':
         if request.session.has_key('phone'):
-            phone = request.session['phone']
-            product_id = request.GET.get('prod_id')
-            try:
-                cart = Cart.objects.get(product_id=product_id, phone=phone)
-                cart.delete()
-                return JsonResponse({'success': 'Product removed from cart.'})
-            except Cart.DoesNotExist:
-                return JsonResponse({'error': 'Product not found in cart.'}, status=404)
-        else:
-            return JsonResponse({'error': 'Phone not found in session.'}, status=400)
+            cart = Cart.objects.filter(product_id=pk)
+            cart.delete()
+    carts = Cart.objects.filter(phone=request.session['phone'])
+    customer = Customer.objects.filter(phone=request.session['phone'])
+
+    data = {
+        'name': customer.first().name if customer else "User",
+        'carts': carts
+    } 
+    if carts: 
+        return render(request, 'show_cart.html', data)
     else:
-        return JsonResponse({'error': 'Only GET method is allowed.'}, status=405)
+        return render(request, 'empty_cart.html', data)
+                
+                
  
 
 

@@ -20,7 +20,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for cart in cart %}
+                {% for cart in carts %}
                 <tr>
                     <td>{{forloop.counter}}</td>
                     <td><img style="height: 80px;" class="rounded-circle" src="{{cart.product.image.url}}" alt=""></td>
@@ -28,10 +28,10 @@
                     <td>{{cart.quantity}}</td>
                     <td>Rs.{{cart.product.price}}</td>
                     
-                    <td><a href="/show_cart" class="minus-cart btn btn-primary" ></a></td>
+                    <td><a href="{% url 'minus_cart' cart.product.id %}" class="minus-cart btn btn-primary" >-</a></td>
                     <td><span id="quantity">{{cart.quantity}}</span></td>
-                    <td><a href="/show_cart" class="plus-cart btn btn-primary" >+</a></td>
-                    <td><a href="/show_cart" class="btn btn-danger btn-sm remove-cart" >Delete</a></td>
+                    <td><a href="{% url 'plus_cart' cart.product.id %}" class="plus-cart btn btn-primary" >+</a></td>
+                    <td><a href="{% url 'remove_cart' cart.product.id %}" class="btn btn-danger btn-sm remove-cart" >Delete</a></td>
                 </tr>
             </tbody>
                 {% endfor %}
@@ -79,65 +79,5 @@
       </div>
     </div>
   </div>
-
-
-{% comment %} <script>
-    $('.plus-cart').click(function() {
-    var id = $(this).attr("pid").toString();
-    $.ajax({
-    type: "GET",
-    url: "/plus_cart",
-    data: {
-    prod_id : id
-    },
-    success: function(data) {
-    }   
-    });
-    });
-
-       
-    
-
-    $(document).ready(function() {
-        $('.minus-cart').click(function() {
-            var id = $(this).attr("pid").toString();
-            $.ajax({
-                type: "GET",
-                url: "/minus_cart",
-                data: {
-                    prod_id: id
-                },
-                success: function(data) {
-                console.log(data)    
-                
-                }
-            });
-        });
-    });
-
-
-    $(document).ready(function() {
-        $('.remove-cart').click(function(event) {
-            event.preventDefault(); // Prevent the default action of the link
-            var id = $(this).attr("pid").toString();
-            $.ajax({
-                type: "GET",
-                url: "/remove_cart",
-                data: {
-                    prod_id: id
-                },
-                success: function(data) {
-                    // Handle success response here, if needed
-                    console.log("Product removed from cart successfully.");
-                },
-                error: function(xhr, textStatus, errorThrown) {
-                    // Handle error response here, if needed
-                    console.error("Error removing product from cart:", errorThrown);
-                }
-            });
-        });
-    });
-    
-</script> {% endcomment %}
 
 {% endblock %}
