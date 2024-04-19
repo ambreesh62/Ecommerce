@@ -318,7 +318,7 @@ def search(request):
     if request.session.has_key('phone'):
         phone = request.session['phone']
         query = request.GET.get('query')
-        search = Product.objects.filter(name__contains=query)
+        search = Product.objects.filter(name__icontains=query)
         category = Category.get_all_caregories()
         total_item = len(Cart.objects.filter(phone=phone))
         customer = Customer.objects.filter(phone=phone)
@@ -334,4 +334,4 @@ def search(request):
         }    
         return render(request, 'search.html',data)  
     else:
-        return redirect('login')    
+        return redirect('login')
