@@ -119,7 +119,7 @@ class Login(View):
    
 def productdetail(request,pk):
     total_item = 0
-    product = Product.objects.all(pk=pk)  
+    product = Product.objects.get(pk=pk)  
     item_already_in_cart = False
     if request.session.has_key('phone'):
         phone = request.session['phone']
