@@ -1,0 +1,36 @@
+<!doctype html>
+{% extends 'base.html' %}
+{% block title %}Customer Login{% endblock title %}
+{% block content %}
+
+<div class="container">
+    <div class="row my-3">
+        <div class="col-sm-6 offset-sm-3">
+
+            <h3>Customer Login</h3>
+            <form action="/login" method="post" class="shadow p-5">
+                {% csrf_token %}
+                {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+                {% endif %}
+                <div class="form-group">
+                    <label for="phone" class="form-control-lg">Mobile No.</label>
+                    <input type="text" name="phone" id="phone" value="{{ value.phone }}" class="form-control" placeholder="Enter Mobile No.">
+                </div>
+
+                <div class="form-group pt-4">
+                    <input type="submit" value="Login" class="btn btn-primary">
+                </div>
+
+                <div class="text-center text-primary fw-bold">
+                    <small>New user in HappyShop?</small>
+                    <a href="/signup" class="text-danger">Signup</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

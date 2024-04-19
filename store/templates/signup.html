@@ -1,0 +1,54 @@
+<!doctype html>
+{% extends 'base.html' %}
+{% block titel %}Coustmer Signup{% endblock titel %}
+{% block content %}
+
+<div class="container">
+    <div class="row my-3">
+        <div class="col-sm-6 offset-sm-3">
+
+            <h3>Coustmer Signup</h3>
+            <form action="/signup" method="post" class="shadow p-5">
+                {% if message %}
+                {% for message in message %}
+                <p {% if message.tags %} class="alert alert-{{message.tags}} mb-3" ,{% endif %}->{{message}}</p>
+                {% endfor %}
+                {% endif %}
+                {% csrf_token %}
+                {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{error}}
+                </div>
+                {% endif %}
+                <div class="form-group">
+                    <label for="" class="from-control-lg">Name</label>
+                    <input type="text" name="name" id="" value="{{value.name}}" class="form-control placeholder" placeholder="Enter Name">
+
+
+                </div>
+
+                <div class="form-group">
+                    <label for="" class="from-control-lg">Mobile No.</label>
+                    <input type="text" name="phone" id="" value="{{value.phone}}" class="form-control placeholder" placeholder="Enter Mobile No.">
+
+                </div>
+
+                <div class="form-group pt-4">
+                    <input type="submit" value="Signup" class="btn btn-primary">
+                </div>
+
+                <div class="text-center text-primary fw-bold">
+                <small>Existing user in HappyShop ?</small>
+                <a href="/login" class="text-danger">Login</a></div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+
+{% endblock %}

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Empty Order{% endblock title %}
+{% block content %}
+
+<div class="container my-5">
+    <div class="row justify-content-center"> <!-- Center the content -->
+        <div class="col-md-8 text-center"> <!-- Specify the width and center the content -->
+            <h3>You have no Order !</h3>
+            <div class="text-center">
+                <img src="{% static 'images/no_cart.png' %}" class="img-fluid img-thumbnail" alt="No Cart Image"> <!-- Add alt text for accessibility -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
