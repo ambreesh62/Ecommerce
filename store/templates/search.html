@@ -1,39 +1,37 @@
-<!doctype html>
+<!DOCTYPE html>
 {% extends 'base.html' %}
 {% block content %}
 
 <div class="container-fluid mt-3">
   <div class="row">
-      <div class="col-lg-3">
-          <div class="list-group">
+    <div class="col-lg-3">
+      <div class="list-group">
+        <a href="/" class="list-group-item list-group-action">All Products</a>
 
-            <a href="/" class="list-group-item list-group-action">All Product</a>
+        {% for category in category %}
+        <a href="/?category={{ category.id }}" class="list-group-item list-group-action">{{ category.name }}</a>
+        {% endfor %}
 
-            {% for category in category %}
-            <a href="/?category={{category.id}}" class="list-group-item list-group-action">{{category.name}}</a>
-            {% endfor %}
-
-          </div>
       </div>
-  </div>
-</div>
-
-<div id="product" class="col-lg-9">
-    <div class="row mx-auto">
-{% for product in search %}
-<div class="card mx-auto mb-3" style="...">
-    <a href="{% url 'product-detail' product.id %}" class="btn">
-        <div class="item">
-        <img class="card-img-top" src="{{ product.image.url }}" alt="{{product.name}}">
-        </div>
-        </a>
-        
-        <div class="card-body">
-              <h4 class="card-title">{{ product.name }}</h4>
-              <h6 class="card-text">Rs. {{ product.price }}</h6>
-        </div>
     </div>
-      {% endfor %}
+    <!-- product -->
+    <div id="product" class="col-lg-9">
+      <div class="row mx-auto">
+        {% for product in search %}
+        <div class="card mx-auto mb-3" style="width: 18rem;">
+          <a href="{% url 'product-detail' product.id %}" class="btn">
+            <div class="product-image-container">
+              <img class="card-img-top" src="{{ product.image.url }}" alt="{{ product.name }}">
+            </div>
+          </a>
+          <div class="card-body">
+            <h4 class="card-title">{{ product.name }}</h4>
+            <h6 class="card-text"><span class="price">Rs. {{ product.price }}</span></h6>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
   </div>
 </div>
 
