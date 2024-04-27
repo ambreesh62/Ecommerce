@@ -8,7 +8,7 @@ class OrderDetail(models.Model):
         DELIVERED = 'DELIVERED', 'Delivered'
         CANCELLED = 'CANCELLED', 'Cancelled'
 
-    user = models.IntegerField(default=True)
+    user = models.CharField(default=True)
     product_name = models.CharField(max_length=260)
     image = models.ImageField(null=True, blank=True)
     qty = models.PositiveIntegerField(default=1)

@@ -10,7 +10,7 @@ from .models.order import OrderDetail
 
 
 class AdminProduct(admin.ModelAdmin):
-    list_display=['id', 'name', 'price', 'category', 'description']
+    list_display=['id', 'name', 'price', 'category', 'description', 'image']
     
 
 
@@ -21,12 +21,12 @@ class AdminCustomer(admin.ModelAdmin):
 
 
 class AdminCart(admin.ModelAdmin):
-    list_display=['id', 'phone', 'product','image', 'price']
+    list_display=['id', 'phone', 'product','image', 'quantity', 'price']
     
     
     
 class OrderDetailAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'product_name', 'qty', 'price', 'ordered_date', 'status')    
+    list_display = ('id', 'user', 'product_name', 'image', 'qty', 'price', 'ordered_date', 'status')    
 
 
 admin.site.register(Product,AdminProduct)

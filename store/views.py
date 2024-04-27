@@ -4,6 +4,8 @@ from django.views import View
 from django.contrib import messages
 from django.db.models import Q
 from django.http import JsonResponse
+from django.db import transaction
+
 # models
 from store.models.product import Product
 from store.models.category import Category
@@ -263,11 +265,11 @@ def checkout(request):
         mobile = request.POST.get('mobile')
         
         cart_product = Cart.objects.filter(phone=phone)
-        for c in cart_product:
-            qty = c.quantity
-            price = c.price
-            product_name = c.product
-            image = c.image
+        for cart in cart_product:
+            qty = cart.quantity
+            price = cart.price
+            product_name = cart.product
+            image = cart.image
             
             OrderDetail(user=phone, product_name=product_name, image=image, qty=qty, price=price).save()
             cart_product.delete()
@@ -275,8 +277,8 @@ def checkout(request):
             total_item = len(Cart.objects.filter(phone=phone))
             customer = Customer.objects.filter(phone=phone)
             
-            for c in customer:
-                name = c.name
+            for customer in customer:
+                name = customer.name
             
             data = {
                 'name' : name,
@@ -285,7 +287,7 @@ def checkout(request):
                 'mobile' : mobile
             }    
                 
-                
+
             return render(request, 'empty_cart.html',data)
     else:
         return redirect('login')    
@@ -296,9 +298,9 @@ def order(request):
     if request.session.has_key('phone'):
         phone = request.session['phone']
         total_item = len(Cart.objects.filter(phone=phone))
-        customer = Customer.objects.filter(phone=phone)
-        for c in customer:
-            name = c.name
+        customers = Customer.objects.filter(phone=phone)
+        for customer in customers:
+            name = customer.name
             order = OrderDetail.objects.filter(user=phone)
             
             data ={
@@ -306,10 +308,10 @@ def order(request):
             'name' : name,
             'total_item' : total_item
         }
-            if order :
-                return render(request, 'order.html',data)
-            else: 
-                return render(request, 'emptyorder.html', data)    
+        if order :
+            return render(request, 'order.html',data)
+        else: 
+            return render(request, 'emptyorder.html', data)    
     else:
         return redirect('login')    
 
