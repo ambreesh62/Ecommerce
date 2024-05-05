@@ -81,7 +81,7 @@ class SignUp(View):
             
         if not error_message:
             customer.register()
-            messages.success(request, 'Congratulations! Registration Successful.')
+            messages.success(request, 'Congratulations! Registration Successful')
             return redirect('signup')
         else:
             data = {
@@ -258,39 +258,42 @@ def remove_cart(request, pk):
 # User Checkout
 def checkout(request):
     total_item = 0
-    if request.session.has_key('phone'):
+    if 'phone' in request.session:
         phone = request.session['phone']
         name = request.POST.get('name')
         address = request.POST.get('address')
         mobile = request.POST.get('mobile')
         
-        cart_product = Cart.objects.filter(phone=phone)
-        for cart in cart_product:
+        cart_products = Cart.objects.filter(phone=phone)
+        
+        order_details_to_save = []
+        for cart in cart_products:
             qty = cart.quantity
-            price = cart.price
-            product_name = cart.product
-            image = cart.image
+            price = cart.product.price  
+            product_name = cart.product.name
+            image = cart.product.image
             
-            OrderDetail(user=phone, product_name=product_name, image=image, qty=qty, price=price).save()
-            cart_product.delete()
-            
-            total_item = len(Cart.objects.filter(phone=phone))
-            customer = Customer.objects.filter(phone=phone)
-            
-            for customer in customer:
-                name = customer.name
-            
-            data = {
-                'name' : name,
-                'total_item' : total_item,
-                'address' : address,
-                'mobile' : mobile
-            }    
-                
-
-            return render(request, 'empty_cart.html',data)
+            order_details_to_save.append(OrderDetail(user=phone, product_name=product_name, image=image, qty=qty, price=price))
+        
+        OrderDetail.objects.bulk_create(order_details_to_save)
+        cart_products.delete()
+        
+        total_item = Cart.objects.filter(phone=phone).count()
+        customer = Customer.objects.filter(phone=phone).first()
+        if customer:
+            name = customer.name
+        
+        data = {
+            'name': name,
+            'total_item': total_item,
+            'address': address,
+            'mobile': mobile
+        }
+        
+        return render(request, 'empty_cart.html', data)
     else:
-        return redirect('login')    
+        return redirect('login')
+
 
 
 def order(request):
@@ -301,10 +304,10 @@ def order(request):
         customers = Customer.objects.filter(phone=phone)
         for customer in customers:
             name = customer.name
-            order = OrderDetail.objects.filter(user=phone)
+            orders = OrderDetail.objects.filter(user=phone)
             
             data ={
-            'order' : order,
+            'orders' : orders,
             'name' : name,
             'total_item' : total_item
         }

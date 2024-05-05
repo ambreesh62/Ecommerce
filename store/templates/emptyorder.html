@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Empty Order{% endblock title %}
+{% block title %}No Orders{% endblock title %}
 {% block content %}
 
 <div class="container my-5">
-    <div class="row justify-content-center"> <!-- Center the content -->
-        <div class="col-md-8 text-center"> <!-- Specify the width and center the content -->
-            <h3>You have no Order !</h3>
+    <div class="row justify-content-center"> 
+        <div class="col-md-8 text-center"> 
+            <h1>Welcome, {{ name }}</h1>
+            <h3>You have no orders yet !</h3>
             <div class="text-center">
-                <img src="{% static 'images/no_cart.png' %}" class="img-fluid img-thumbnail" alt="No Cart Image"> <!-- Add alt text for accessibility -->
+                <img src="{% static 'images/no_cart.png' %}" class="img-fluid img-thumbnail" alt="No Cart Image">
             </div>
         </div>
     </div>
