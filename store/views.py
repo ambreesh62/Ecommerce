@@ -3,9 +3,10 @@ from django.http import HttpResponse
 from django.views import View
 from django.contrib import messages
 from django.db.models import Q
-from django.http import JsonResponse
-from django.db import transaction
-
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.db.models import F
 # models
 from store.models.product import Product
 from store.models.category import Category
@@ -146,104 +147,107 @@ def Logout(request):
 #  Add to cart
 
 def add_to_cart(request):
-    phone = request.session['phone']
-    product_id = request.GET.get('prod_id')
-    product = Product.objects.get(id=product_id)
-    cart = Cart.objects.filter(product_id=product_id)
-    if cart:
-        cart.first().quantity += 1
-        cart.first().save()
-    else:
-        Cart.objects.create(phone=phone,product_id=product.id)
-    customer = Customer.objects.filter(phone=request.session['phone'])
+    if 'phone' in request.session:
+        phone = request.session['phone']
+        product_id = request.GET.get('prod_id')
+        product = Product.objects.get(id=product_id)
+        cart = Cart.objects.filter(phone=phone, product_id=product_id)
+        
+        if cart:
+            cart_obj = cart.first()
+            cart_obj.quantity += 1
+            cart_obj.price += product.price 
+            cart_obj.save()
+        else:
+            Cart.objects.create(phone=phone, product_id=product.id, price=product.price, image=product.image, quantity=1)
+            
+        customer = Customer.objects.filter(phone=phone).first()
+        carts = Cart.objects.filter(phone=phone)
 
-    data = {
-        'name': customer.first().name if customer else "User",
-        'carts': Cart.objects.filter(phone=phone)
-    }
-    return render(request, 'show_cart.html', data)
+        data = {
+            'name': customer.name if customer else "User",
+            'carts': carts
+        }
+        return render(request, 'show_cart.html', data)
+    else:
+        return redirect('login')
+
 
 # Show_Cart
 def Show_cart(request):
-    total_item = 0
-    if request.session.has_key('phone'):
+    if 'phone' in request.session:
         phone = request.session['phone']
-        
+        customer = Customer.objects.filter(phone=phone).first()
         carts = Cart.objects.filter(phone=phone)
 
-        customer = Customer.objects.filter(phone=request.session['phone'])
+        if customer:
+            name = customer.name
+        else:
+            name = "User"
 
         data = {
-            'name': customer.first().name if customer else "User",
-            'carts': Cart.objects.filter(phone=phone)
+            'name': name,
+            'carts': carts.annotate(total_price=F('quantity') * F('product__price'))  # Calculate total price for each cart item
         }
-                
+        
         if carts:
             return render(request, 'show_cart.html', data)
         else:
             return render(request, 'empty_cart.html', data)
-            
-    return render(request, 'login.html')
-        
-     
+    else:
+        return redirect('login')
 
-    
-    
+   
 # Cart me plus krne ke liye
 def plus_cart(request, pk):
     if request.session.has_key('phone'):
-        cart = Cart.objects.get(product_id=pk)
-        cart.quantity+=1
-        cart.save()
+        try:
+            cart = Cart.objects.get(product_id=pk)
+            cart.quantity += 1
+            cart.save()
+        except Cart.DoesNotExist:
+        # Handle the case where the cart does not exist
+            pass
+        return HttpResponseRedirect(reverse('show_cart'))  # Redirect to show_cart view after incrementing the quantity
         
-    carts = Cart.objects.filter(phone=request.session['phone'])
-    customer = Customer.objects.filter(phone=request.session['phone'])
-
-    data = {
-        'name': customer.first().name if customer else "User",
-        'carts': carts
-    }
-    return render(request, 'show_cart.html', data)
+    return redirect('login')
     
     
     
 # Cart se htaane ke liye
-
 def minus_cart(request, pk):
     if request.session.has_key('phone'):
-        cart = Cart.objects.get(product_id=pk)
-        if cart.quantity == 1:
-            cart.delete()
-        else:
-            cart.quantity-=1
-            cart.save()
-        
-    carts = Cart.objects.filter(phone=request.session['phone'])
-    customer = Customer.objects.filter(phone=request.session['phone'])
-
-    data = {
-        'name': customer.first().name if customer else "User",
-        'carts': carts
-    } 
-    if carts:      
-        return render(request, 'show_cart.html', data)
-    else:
-        return render(request, 'empty_cart.html',data)
+        try:
+            cart = Cart.objects.get(phone=request.session['phone'], product_id=pk)
+            if cart.quantity == 1:
+                cart.delete()
+            else:
+                cart.quantity -= 1
+                cart.save()
+                
+            return HttpResponseRedirect(reverse('show_cart'))
+            
+        except ObjectDoesNotExist:
+            pass  # Cart doesn't exist, so no need to delete or decrement
+    
+    return redirect('login')
     
     
 # Remove Cart
-
 def remove_cart(request, pk):
-    
     if request.method == 'GET':
         if request.session.has_key('phone'):
             cart = Cart.objects.filter(product_id=pk)
             cart.delete()
+            
+    # Fetching all cart items
     carts = Cart.objects.filter(phone=request.session['phone'])
-    customer = Customer.objects.filter(phone=request.session['phone'])
+    
+    # Fetching customer details
+    customer = Customer.objects.filter(phone=request.session['phone']).first()
 
     data = {
-        'name': customer.first().name if customer else "User",
+        'name': customer.name if customer else "User",
         'carts': carts
     } 
     if carts: 

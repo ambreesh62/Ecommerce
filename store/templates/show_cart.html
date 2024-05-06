@@ -18,23 +18,22 @@
                     <th></th>
                     <th>Action</th>
                     <th></th>
-                    <th>Delete</th>
+                    <th>Remove</th>
                 </tr>
             </thead>
             <tbody>
                 {% for cart in carts %}
                 <tr>
-                    <td>{{forloop.counter}}</td>
-                    <td><img style="height: 70px;" src="{{cart.product.image.url}}" alt="{{cart.product.image.url}}"></td>
-                    <td>{{cart.product.name}}</td>
-                    <td>{{cart.quantity}}</td>
-                    <td>Rs.{{cart.product.price}}</td>
-                    
-                    <td><a href="{% url 'minus_cart' cart.product.id %}" class="minus-cart btn btn-primary" >-</a></td>
-                    <td><span id="quantity">{{cart.quantity}}</span></td>
-                    <td><a href="{% url 'plus_cart' cart.product.id %}" class="plus-cart btn btn-primary" >+</a></td>
-                    <td><a href="{% url 'remove_cart' cart.product.id %}" class="btn btn-danger btn-sm remove-cart" >Delete</a></td>
-                </tr>
+                  <td>{{forloop.counter}}</td>
+                  <td><img style="height: 70px;" src="{{cart.product.image.url}}" alt="{{cart.product.image.url}}"></td>
+                  <td>{{cart.product.name}}</td>
+                  <td>{{cart.quantity}}</td>
+                  <td>Rs.{{ cart.total_price }}</td>  <!-- Display the total price -->
+                  <td><a href="{% url 'minus_cart' cart.product.id %}" class="minus-cart btn btn-primary" >-</a></td>
+                  <td><span id="quantity">{{cart.quantity}}</span></td>
+                  <td><a href="{% url 'plus_cart' cart.product.id %}" class="plus-cart btn btn-primary" >+</a></td>
+                  <td><a href="{% url 'remove_cart' cart.product.id %}" class="btn btn-danger btn-sm remove-cart" >Delete</a></td>  
+                </tr>                  
             </tbody>
                 {% endfor %}
         </table>
