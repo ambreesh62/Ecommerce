@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-v6sxa!9krjxt=%27msglk!54k+%upn=u&$hs^pt$a(h5@*t-3d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['happyshop.pythonanywhere.com']
 
 
 # Application definition
