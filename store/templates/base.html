@@ -121,5 +121,11 @@
 <script>
     var myModal = new bootstrap.Modal(document.getElementById('exampleModal'));
 </script>
+<script>
+    if ( window.history.replaceState ) {
+        window.history.replaceState( null, null, window.location.href );
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-P3ruXy/exvjHCp3S5Dk3G3h6czL4FtZ0qcR8zF8x0HlNI9uA4WbAL5GMqq8RI6zR" crossorigin="anonymous"></script>
 </body>
 </html>

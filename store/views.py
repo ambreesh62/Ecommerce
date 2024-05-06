@@ -147,31 +147,35 @@ def Logout(request):
 #  Add to cart
 
 def add_to_cart(request):
-    if 'phone' in request.session:
-        phone = request.session['phone']
-        product_id = request.GET.get('prod_id')
-        product = Product.objects.get(id=product_id)
-        cart = Cart.objects.filter(phone=phone, product_id=product_id)
-        
-        if cart:
-            cart_obj = cart.first()
-            cart_obj.quantity += 1
-            cart_obj.price += product.price 
-            cart_obj.save()
-        else:
-            Cart.objects.create(phone=phone, product_id=product.id, price=product.price, image=product.image, quantity=1)
-            
-        customer = Customer.objects.filter(phone=phone).first()
-        carts = Cart.objects.filter(phone=phone)
+    phone = request.session['phone']
+    product_id = request.GET.get('prod_id')
+    product = Product.objects.get(id=product_id)
+    cart = Cart.objects.filter(product_id=product_id)
 
-        data = {
-            'name': customer.name if customer else "User",
-            'carts': carts
-        }
-        return render(request, 'show_cart.html', data)
+    if cart:
+        cart_obj = cart.first()
+        cart_obj.quantity += 1
+        cart_obj.save()
     else:
-        return redirect('login')
+        # If the product is not in the cart, add it
+        Cart.objects.create(phone=phone, product_id=product.id, price=product.price, image=product.image, quantity=1)
+    # Retrieve the updated cart items
+    carts = Cart.objects.filter(phone=phone)
 
+    # Calculate the total price for each item in the cart
+    for cart in carts:
+        cart.total_price = cart.quantity * cart.product.price
+        cart.save()
+        
+
+    # Fetching customer details
+    customer = Customer.objects.filter(phone=phone).first()
+
+    data = {
+        'name': customer.name if customer else "User",
+        'carts': carts
+    }
+    return render(request, 'show_cart.html', data)
 
 # Show_Cart
 def Show_cart(request):
@@ -308,10 +312,10 @@ def order(request):
         customers = Customer.objects.filter(phone=phone)
         for customer in customers:
             name = customer.name
-            orders = OrderDetail.objects.filter(user=phone)
+            order = OrderDetail.objects.filter(user=phone)
             
             data ={
-            'orders' : orders,
+            'orders' : order,
             'name' : name,
             'total_item' : total_item
         }
