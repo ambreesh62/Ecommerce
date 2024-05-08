@@ -147,35 +147,26 @@ def Logout(request):
 #  Add to cart
 
 def add_to_cart(request):
-    phone = request.session['phone']
-    product_id = request.GET.get('prod_id')
-    product = Product.objects.get(id=product_id)
-    cart = Cart.objects.filter(product_id=product_id)
-
-    if cart:
-        cart_obj = cart.first()
-        cart_obj.quantity += 1
-        cart_obj.save()
-    else:
-        # If the product is not in the cart, add it
-        Cart.objects.create(phone=phone, product_id=product.id, price=product.price, image=product.image, quantity=1)
-    # Retrieve the updated cart items
-    carts = Cart.objects.filter(phone=phone)
-
-    # Calculate the total price for each item in the cart
-    for cart in carts:
-        cart.total_price = cart.quantity * cart.product.price
-        cart.save()
+    if 'phone' in request.session:
+        phone = request.session['phone']
+        product_id = request.GET.get('prod_id')
+        product = Product.objects.get(id=product_id)
         
+        # Check if the product is already in the cart
+        cart = Cart.objects.filter(phone=phone, product=product).first()
 
-    # Fetching customer details
-    customer = Customer.objects.filter(phone=phone).first()
-
-    data = {
-        'name': customer.name if customer else "User",
-        'carts': carts
-    }
-    return render(request, 'show_cart.html', data)
+        if cart:
+            # If the product is in the cart, increment its quantity
+            cart.quantity += 1
+            cart.save()
+        else:
+            # If the product is not in the cart, add it
+            Cart.objects.create(phone=phone, product=product, price=product.price, image=product.image, quantity=1)
+        
+        # Redirect to the 'show_cart' view
+        return redirect('show_cart')
+    else:
+        return redirect('login')
 
 # Show_Cart
 def Show_cart(request):
@@ -204,23 +195,31 @@ def Show_cart(request):
    
 # Cart me plus krne ke liye
 def plus_cart(request, pk):
-    if request.session.has_key('phone'):
+    if 'phone' in request.session:
         try:
-            cart = Cart.objects.get(product_id=pk)
+            # Get the cart item based on the product's primary key
+            cart = Cart.objects.get(phone=request.session['phone'], product_id=pk)
+            # Increment the quantity of the cart item
             cart.quantity += 1
             cart.save()
+            
+            # Reorder the cart items
+            reorder_cart_items(request.session['phone'])
+            
         except Cart.DoesNotExist:
-        # Handle the case where the cart does not exist
+            # Handle the case where the cart does not exist
             pass
-        return HttpResponseRedirect(reverse('show_cart'))  # Redirect to show_cart view after incrementing the quantity
         
-    return redirect('login')
+        # Redirect to the 'show_cart' view
+        return HttpResponseRedirect(reverse('show_cart'))
+    else:
+        return redirect('login')
     
     
     
 # Cart se htaane ke liye
 def minus_cart(request, pk):
-    if request.session.has_key('phone'):
+    if 'phone' in request.session:
         try:
             cart = Cart.objects.get(phone=request.session['phone'], product_id=pk)
             if cart.quantity == 1:
@@ -228,13 +227,22 @@ def minus_cart(request, pk):
             else:
                 cart.quantity -= 1
                 cart.save()
+            
+            # Reorder the cart items
+            reorder_cart_items(request.session['phone'])
                 
             return HttpResponseRedirect(reverse('show_cart'))
             
-        except ObjectDoesNotExist:
+        except Cart.DoesNotExist:
             pass  # Cart doesn't exist, so no need to delete or decrement
     
-    return redirect('login')
+    return redirect('login') 
+
+def reorder_cart_items(phone):
+    carts = Cart.objects.filter(phone=phone)
+    for index, cart in enumerate(carts.order_by('id'), start=1):
+        cart.sn = index
+        cart.save()
     
     
 # Remove Cart
