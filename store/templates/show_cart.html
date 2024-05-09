@@ -39,39 +39,65 @@
         </table>
         <hr>
         <div class="m-3 p-3">
-            <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn btn-outline-info border rounded col-lg-3 float-right">Place order</a>
+          <button type="button" class="btn btn-outline-info border rounded col-lg-3 float-right" data-toggle="modal" data-target="#paymentModal">Place Order</button>
         </div>
     </div>
 </div>
 
-<!---Checkout--->
-<!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Order Summary</h1>
-        </div>
-        <div class="modal-body">
-          <form action="/checkout" method="POST">
-            {% csrf_token %}
-            <div class="form-group mt-3">
-              <label for="name">Name</label>
-              <input required type="text" name="name" id="name" class="form-control" placeholder="Enter Your Name">
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" role="dialog" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentModalLabel">Order Summary</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
-            <div class="form-group mt-3">
-              <label for="address">Shipping Address</label>
-              <input required type="text" name="address" id="address" class="form-control" placeholder="Enter Your Shipping Address">
+            <div class="modal-body">
+                <form action="/checkout" method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input required type="text" name="name" id="name" class="form-control" placeholder="Enter Your Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Shipping Address</label>
+                        <input required type="text" name="address" id="address" class="form-control" placeholder="Enter Your Shipping Address">
+                    </div>
+                    <div class="form-group">
+                        <label for="mobile">Mobile No.</label>
+                        <input required type="text" name="mobile" id="mobile" class="form-control" placeholder="Enter Your Mobile No.">
+                    </div>
+                    <div class="form-group">
+                        <label for="payment">Payment Method</label>
+                        <select class="form-control" id="payment" name="payment">
+                            <option value="cash">Cash on Delivery</option>
+                            <!-- Add more payment options if needed -->
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Confirm Order</button>
+                </form>
             </div>
-            <div class="form-group mt-3">
-              <label for="mobile">Mobile No.</label>
-              <input required type="text" name="mobile" id="mobile" class="form-control" placeholder="Enter Your Mobile No.">
-            </div class="modal-footer">
-            <input type="submit" class="btn btn-outline-info border rounded col-lg-6 mx-auto mt-2" value="Make Payment">
-            <button type="button" class="btn btn-danger border rounded col-lg-6 mx-auto mt-2"  data-bs-dismiss="modal" >Exit</button>
-        </form>
         </div>
-      </div>
     </div>
-  </div>
+</div>
 {% endblock %}
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("orderForm").addEventListener("submit", function(event) {
+          console.log("Form submitted!");
+          // Prevent the default form submission
+          event.preventDefault();
+          // Optionally, you can perform additional actions here before submitting the form
+          // For example, you can show a loading spinner or disable the button
+          // Then submit the form programmatically
+          this.submit();
+      });
+
+      document.getElementById("confirmOrderBtn").addEventListener("click", function() {
+          console.log("Confirm Order button clicked!");
+      });
+  });
+</script>
